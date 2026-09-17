@@ -3,6 +3,16 @@
 Parse a duration string into milliseconds, and refuse anything ambiguous instead of guessing.
 Zero dependencies.
 
+**Got `undefined` from `ms('1h30m')`?** That is what brought most people here. `ms` accepts one unit
+at a time, so `1h30m`, `2d4h`, `PT1H30M` and `1 hour 30 minutes` all come back `undefined`. This
+parses all of them — and unlike the other compound parsers, it refuses malformed input instead of
+returning a confident wrong number.
+
+```js
+ms('1h30m');            // undefined
+parseDuration('1h30m'); // 5400000
+```
+
 ```js
 import {parseDuration} from 'exact-duration';
 
