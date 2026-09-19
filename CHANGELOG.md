@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.1
+
+README corrections, so that every claim is one that holds:
+
+- `parse-duration` reads `1h30` as 1h30m (5400000), taking a bare trailing number as the next unit
+  down; the earlier text said it dropped the 30 and returned 3600000, which is what `timestring` and
+  `@sapphire/duration` do. The differential test already asserted the correct values.
+- The comma in `1,5h` is a thousands separator in `parse-duration`'s documented default locale, and a
+  comma-decimal locale can be set (#35); the text now says so instead of presenting it as a bug.
+- `ms`'s single-unit scope is linked to the open request for multiple units (#54, 2015).
+- The GitHub code-search figure is stated with its query. No code change.
+
 ## 0.1.0
 
 First release.

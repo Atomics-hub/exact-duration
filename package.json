@@ -1,6 +1,6 @@
 {
   "name": "exact-duration",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Parse a duration string into milliseconds — 1h30m, PT1H30M, 1 hour 30 minutes — and refuse anything ambiguous instead of guessing. Zero dependencies.",
   "main": "./dist/index.cjs",

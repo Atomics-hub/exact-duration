@@ -28,21 +28,30 @@ parseDuration('1,5h');    // DurationError — one and a half hours, or fifteen?
 Durations arrive as text: a config file, a CLI flag, an environment variable, an API payload. Every
 parser in this space makes one of two trades, and neither is safe.
 
-**`ms` (394M downloads a week) is strict but narrow.** It accepts a single unit and nothing else, so
-`1h30m`, `PT1H30M` and `1 hour 30 minutes` all come back `undefined`. That is honest, and it is also
-why so many projects write their own: searching GitHub finds a hand-rolled `parseDuration` more than
-twenty thousand times.
+**`ms` (393M downloads a week) is strict but narrow.** It accepts a single unit and nothing else, so
+`1h30m`, `PT1H30M` and `1 hour 30 minutes` all come back `undefined`. That is honest, and it is not
+news to its maintainers: multiple units have been requested since 2015
+([#54](https://github.com/vercel/ms/issues/54)) and the request is still open. It is also why so many
+projects write their own — a GitHub code search for `"function parseDuration"` returns more than
+30,000 files.
 
 **The parsers that accept `1h30m` accept nearly everything else too**, and answer with a number:
 
 ```js
-parseDuration('1,5h');    // 54000000  — fifteen hours, not one and a half
-parseDuration('1h30');    // 3600000   — the 30 is silently dropped
+parseDuration('1,5h');    // 54000000  — fifteen hours: the comma is read as a thousands separator
+parseDuration('1h30');    // 5400000   — the bare 30 is taken as minutes
 parseDuration('h30m');    // 1800000   — the leading junk is ignored
 parseDuration('1h2h');    // 10800000  — the same unit twice, quietly added
 ```
 
-That last set is `parse-duration`, the most capable alternative. It also mis-reads valid ISO 8601:
+That set is `parse-duration`, the most capable alternative, and two of the four are choices it
+documents rather than bugs: its README shows `27,681 ns` parsing as 27,681, and a locale with a comma
+decimal can be set ([#35](https://github.com/jkroso/parse-duration/issues/35)). The rule for a bare
+trailing number — it takes the next unit down, so `1h30` is 1h30m and `1m30` is 1m30s — is in the
+source but not the README. `timestring` and `@sapphire/duration` drop the 30 instead and return
+3600000. Three parsers, two answers, and no error from any of them: that is what this package refuses.
+
+`parse-duration` also mis-reads valid ISO 8601:
 
 ```js
 parseDuration('P1DT2H');  // 7200000   — the day is gone. Should be 93600000.
@@ -51,7 +60,9 @@ parseDuration('PT1M');    // 60000     — one minute. The same number.
 ```
 
 `M` means months before the `T` and minutes after it. Getting that wrong turns a monthly retention
-window into a one-minute one, and nothing reports it.
+window into a one-minute one, and nothing reports it. Unlike the rest of this list, that one has no
+prior report on its tracker; it is one of the four defects at
+[tomryan.dev/silent-defects](https://tomryan.dev/silent-defects/).
 
 None of this throws. A wrong duration becomes a timeout that never fires, a cache that never expires,
 or a retention window off by a factor of forty thousand.
@@ -101,8 +112,8 @@ one column for the other. The libraries do not even agree with each other: `1h-3
 | `PT1D`, `P1H` | `D` is a date unit and `H` a time unit; they are on the wrong side of the `T` |
 
 Calendar units are the one that looks unhelpful and is not. `parse-duration` answers `1mo` with
-2629800000 — the average month. That average is never the month you actually have. If you want thirty
-days, `30d` says so.
+2629800000 — the average month, as its README says. That average is never the month you actually
+have. If you want thirty days, `30d` says so.
 
 Every error names the input and explains the problem:
 
@@ -160,6 +171,9 @@ MIT
 
 ---
 
-Part of a set of measured defects in widely used npm packages — the full list is at
-[tomryan.dev/silent-defects](https://tomryan.dev/silent-defects/), and `npx silent-defects` checks
-your own dependencies against it.
+One of three, with [exact-bytes](https://github.com/Atomics-hub/exact-bytes) and
+[exact-flatten](https://github.com/Atomics-hub/exact-flatten), each built around a measured behaviour
+of a widely used package. Of the behaviours above, only `parse-duration`'s ISO 8601 reading is on
+[tomryan.dev/silent-defects](https://tomryan.dev/silent-defects/), which lists only defects nobody had
+reported; the rest are documented choices or long-open requests. `npx silent-defects` checks a project
+against that list.
