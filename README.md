@@ -157,3 +157,9 @@ ESM and CommonJS, TypeScript types included, Node 18 or newer, no dependencies.
 ## License
 
 MIT
+
+---
+
+Part of a set of measured defects in widely used npm packages — the full list is at
+[tomryan.dev/silent-defects](https://tomryan.dev/silent-defects/), and `npx silent-defects` checks
+your own dependencies against it.
